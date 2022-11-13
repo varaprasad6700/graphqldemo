@@ -1,0 +1,7 @@
+spring:
+    graphql:
+        graphiql:
+            enabled: true
+    data:
+        mongodb:
+            uri: mongodb+srv://varaprasad:1234@cluster0.tugen.mongodb.net/sample?retryWrites=true&w=majority

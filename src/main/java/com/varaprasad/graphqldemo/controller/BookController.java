@@ -10,11 +10,16 @@ import com.varaprasad.graphqldemo.service.AuthorService;
 import com.varaprasad.graphqldemo.service.BookService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.graphql.data.method.annotation.Argument;
+import org.springframework.graphql.data.method.annotation.BatchMapping;
 import org.springframework.graphql.data.method.annotation.MutationMapping;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
 import org.springframework.stereotype.Controller;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
 
 @Controller
 @RequiredArgsConstructor
@@ -48,8 +53,29 @@ public class BookController {
         return bookService.saveBook(new Book(book)).map(BookResponse::new);
     }
 
-//    @BatchMapping
-//    public Mono<Map<BookResponse, AuthorResponse>> author(List<BookResponse> book) {
-//        book.stream().map(BookResponse::getId)
+//    @SchemaMapping(typeName = "Book")
+//    public Flux<AuthorResponse> author(BookResponse book) {
+//        return bookService.getAuthorsForBook(List.of(book.getId()))
+//                .log()
+//                .map(o -> o.get(book.getId()))
+//                .flatMapIterable(Function.identity())
+//                .map(AuthorResponse::new);
 //    }
+
+    @BatchMapping(typeName = "Book")
+    public Mono<Map<BookResponse, List<AuthorResponse>>> author(List<BookResponse> book) {
+        List<String> bookIds = book.stream()
+                .map(BookResponse::getId)
+                .toList();
+        return bookService.getAuthorsForBook(bookIds)
+                .map(Map::entrySet)
+                .flatMapIterable(Function.identity())
+                .collectMap(
+                        o -> book.stream()
+                                .filter(bookResponse -> bookResponse.getId().equalsIgnoreCase(o.getKey()))
+                                .findFirst()
+                                .orElse(BookResponse.builder().id(o.getKey()).build()),
+                        o -> o.getValue().stream().map(AuthorResponse::new).toList()
+                );
+    }
 }

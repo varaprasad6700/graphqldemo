@@ -9,10 +9,7 @@ import com.varaprasad.graphqldemo.response.BookResponse;
 import com.varaprasad.graphqldemo.service.AuthorService;
 import com.varaprasad.graphqldemo.service.BookService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.graphql.data.method.annotation.Argument;
-import org.springframework.graphql.data.method.annotation.BatchMapping;
-import org.springframework.graphql.data.method.annotation.MutationMapping;
-import org.springframework.graphql.data.method.annotation.QueryMapping;
+import org.springframework.graphql.data.method.annotation.*;
 import org.springframework.stereotype.Controller;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -77,5 +74,10 @@ public class BookController {
                                 .orElse(BookResponse.builder().id(o.getKey()).build()),
                         o -> o.getValue().stream().map(AuthorResponse::new).toList()
                 );
+    }
+
+    @SubscriptionMapping
+    public Flux<BookResponse> bookSubscribe() {
+        return bookService.subscriptionMapping();
     }
 }

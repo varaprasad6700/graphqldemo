@@ -3,11 +3,14 @@ package com.varaprasad.graphqldemo.service;
 import com.varaprasad.graphqldemo.entity.Author;
 import com.varaprasad.graphqldemo.entity.Book;
 import com.varaprasad.graphqldemo.repo.BookRepository;
+import com.varaprasad.graphqldemo.response.BookResponse;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.ChangeStreamEvent;
+import org.springframework.data.mongodb.core.ChangeStreamOptions;
 import org.springframework.data.mongodb.core.ReactiveMongoTemplate;
 import org.springframework.data.mongodb.core.aggregation.LookupOperation;
 import org.springframework.data.mongodb.core.aggregation.MatchOperation;
@@ -45,6 +48,14 @@ public class BookService {
         return reactiveMongoTemplate
                 .aggregate(newAggregation(matchOperation, lookupOperation), Book.class, AuthorAggregation.class)
                 .collectMap(AuthorAggregation::getId, AuthorAggregation::getAuthors);
+    }
+
+    public Flux<BookResponse> subscriptionMapping() {
+        return reactiveMongoTemplate
+                .changeStream("book", ChangeStreamOptions.builder().build(), Book.class)
+                .log()
+                .mapNotNull(ChangeStreamEvent::getBody)
+                .mapNotNull(BookResponse::new);
     }
 }
 

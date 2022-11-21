@@ -9,6 +9,10 @@ type Mutation {
     book(book: BookRequest): Book
 }
 
+type Subscription {
+    bookSubscribe: Book
+}
+
 input BookRequest {
     name: String
     revision: Int

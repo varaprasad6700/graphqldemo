@@ -1,12 +1,17 @@
 spring:
-    graphql:
-        graphiql:
-            enabled: true
-        websocket:
-            path: /graphql
-    data:
-        mongodb:
-            uri: ${MONGODB_URI}
+  graphql:
+    graphiql:
+      enabled: true
+    websocket:
+      path: /graphql
+  data:
+    mongodb:
+      uri: ${MONGODB_URI}
 server:
   http2:
     enabled: true
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
